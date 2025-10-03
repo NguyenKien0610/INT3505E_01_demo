@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3 class="mb-3">Tổng quan</h3>
+<div class="row g-3">
+<div class="col-md-7">
+<div class="card">
+<div class="card-header">Danh sách sách</div>
+<div class="card-body p-0">
+<table class="table mb-0">
+<thead><tr><th>Tên</th><th>Tác giả</th><th>Kho</th></tr></thead>
+<tbody>
+{% for b in books %}
+<tr><td>{{ b.title }}</td><td>{{ b.author }}</td><td>{{ b.available_copies }}/{{ b.total_copies }}</td></tr>
+{% else %}
+<tr><td colspan="3" class="text-center">Chưa có sách</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="col-md-5">
+<div class="card">
+<div class="card-header">Phiếu mượn mới nhất</div>
+<ul class="list-group list-group-flush">
+{% for l in recent_loans %}
+<li class="list-group-item">{{ l.borrower }} mượn "{{ l.book.title }}" lúc {{ l.borrowed_at.strftime('%d/%m/%Y %H:%M') }} {% if l.returned_at %}(đã trả){% endif %}</li>
+{% else %}
+<li class="list-group-item text-center">Chưa có</li>
+{% endfor %}
+</ul>
+</div>
+</div>
+</div>
+{% endblock %}

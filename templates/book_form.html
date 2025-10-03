@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3 class="mb-3">{{ 'Thêm sách' if mode=='create' else 'Sửa sách' }}</h3>
+<form method="post">
+{{ form.hidden_tag() }}
+<div class="mb-3">
+{{ form.title.label(class_='form-label') }}
+{{ form.title(class_='form-control') }}
+</div>
+<div class="mb-3">
+{{ form.author.label(class_='form-label') }}
+{{ form.author(class_='form-control') }}
+</div>
+<div class="mb-3">
+{{ form.total_copies.label(class_='form-label') }}
+{{ form.total_copies(class_='form-control') }}
+</div>
+{{ form.submit(class_='btn btn-primary') }}
+<a href="{{ url_for('list_books') }}" class="btn btn-link">Huỷ</a>
+</form>
+{% endblock %}

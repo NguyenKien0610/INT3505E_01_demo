@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+<h3>Quản lý sách</h3>
+<a class="btn btn-primary" href="/books/new">+ Thêm sách</a>
+</div>
+<table class="table table-striped">
+<thead><tr><th>#</th><th>Tên</th><th>Tác giả</th><th>Kho</th><th width="180">Hành động</th></tr></thead>
+<tbody>
+{% for b in books %}
+<tr>
+<td>{{ b.id }}</td><td>{{ b.title }}</td><td>{{ b.author }}</td><td>{{ b.available_copies }}/{{ b.total_copies }}</td>
+<td>
+<a class="btn btn-sm btn-outline-secondary" href="/books/{{ b.id }}/edit">Sửa</a>
+<form action="/books/{{ b.id }}/delete" method="post" class="d-inline" onsubmit="return confirm('Xoá sách?');">
+<button class="btn btn-sm btn-outline-danger" type="submit">Xoá</button>
+</form>
+</td>
+</tr>
+{% else %}
+<tr><td colspan="5" class="text-center">Chưa có sách</td></tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3 class="mb-3">Mượn/Trả sách</h3>
+
+<h5 class="mt-4">Phiếu mượn đang mở</h5>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID sách</th>
+      <th>Sách</th>
+      <th>Người mượn</th>
+      <th>Mượn lúc</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for l in active_loans %}
+      <tr>
+        <td>{{ l.book.id }}</td>  {# dùng Book.id thay vì Loan.id #}
+        <td>{{ l.book.title }}</td>
+        <td>{{ l.borrower }}</td>
+        <td>{{ l.borrowed_at.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>
+          <form action="{{ url_for('return_book', loan_id=l.id) }}" method="post">
+            <button class="btn btn-sm btn-success">Trả</button>
+          </form>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5" class="text-center">Không có phiếu mượn nào</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<hr>
+<h5 class="mt-4">Mượn nhanh</h5>
+<form method="post">
+  {{ form.hidden_tag() }}
+  <div class="row g-2">
+    <div class="col-2">
+      {{ form.book_id(class_="form-control", placeholder="ID sách") }}
+    </div>
+    <div class="col-4">
+      {{ form.borrower(class_="form-control", placeholder="Tên người mượn") }}
+    </div>
+    <div class="col-auto">
+      {{ form.submit(class_="btn btn-primary") }}
+    </div>
+  </div>
+</form>
+{% endblock %}
