@@ -5,7 +5,7 @@ Thư mục này chứa **4 phiên bản demo** thể hiện sự phát triển t
 ---
 
 ## 📁 Cấu trúc thư mục
-
+```bash
 Week02/
 ├── v1_client_server/ # Client–Server
 ├── v2_stateless/ # + Stateless
@@ -80,6 +80,10 @@ cd v3_cacheable_uniform && python app.py
 # Terminal 4
 cd v4_full_rest && python app.py
 
+---
+
+## 🌐 URLs
+```bash
 | Version | Port | URL                                            |
 | ------- | ---- | ---------------------------------------------- |
 | 🟦 V1   | 5000 | [http://localhost:5000](http://localhost:5000) |
@@ -87,6 +91,10 @@ cd v4_full_rest && python app.py
 | 🟨 V3   | 5002 | [http://localhost:5002](http://localhost:5002) |
 | 🟥 V4   | 5003 | [http://localhost:5003](http://localhost:5003) |
 
+---
+
+## 🎯 Mục tiêu từng phiên bản
+```bash
 | Version | Trọng tâm                                                                   |
 | ------- | --------------------------------------------------------------------------- |
 | 🟦 V1   | Hiểu nguyên tắc Client–Server separation                                    |
