@@ -13,15 +13,13 @@ Week02/
 ├── v4_full_rest/ # + Layered System + Code-on-Demand
 └── README.md # File này
 
-yaml
-Sao chép mã
 
 ---
 
 ## 🚀 Evolution Timeline
 
-### 🟦 **V1: Client–Server**  
-**Port:** `5000`
+### 🟦 V1: Client–Server  
+**Port:** 5000  
 
 ✅ Client–Server separation  
 ✅ Basic HTTP endpoints  
@@ -29,8 +27,8 @@ Sao chép mã
 
 ---
 
-### 🟩 **V2: + Stateless**  
-**Port:** `5001`
+### 🟩 V2: + Stateless  
+**Port:** 5001  
 
 ✅ Client–Server  
 ✅ Stateless (no server-side sessions)  
@@ -39,8 +37,8 @@ Sao chép mã
 
 ---
 
-### 🟨 **V3: + Cacheable + Uniform Interface**  
-**Port:** `5002`
+### 🟨 V3: + Cacheable + Uniform Interface  
+**Port:** 5002  
 
 ✅ Client–Server  
 ✅ Stateless  
@@ -51,8 +49,8 @@ Sao chép mã
 
 ---
 
-### 🟥 **V4: + Layered System + Code-on-Demand**  
-**Port:** `5003`
+### 🟥 V4: + Layered System + Code-on-Demand  
+**Port:** 5003  
 
 ✅ Client–Server  
 ✅ Stateless  
@@ -68,6 +66,7 @@ Sao chép mã
 
 ## 🧪 Quick Test — Run All Versions
 
+### Terminal commands
 ```bash
 # Terminal 1
 cd v1_client_server && python app.py
@@ -80,16 +79,17 @@ cd v3_cacheable_uniform && python app.py
 
 # Terminal 4
 cd v4_full_rest && python app.py
-🌐 URLs
-Version	Port	URL
-🟦 V1	5000	http://localhost:5000
-🟩 V2	5001	http://localhost:5001
-🟨 V3	5002	http://localhost:5002
-🟥 V4	5003	http://localhost:5003
 
-🎯 Mục tiêu từng phiên bản
-Version	Trọng tâm
-🟦 V1	Hiểu nguyên tắc Client–Server separation
-🟩 V2	Minh họa Stateless communication pattern
-🟨 V3	Giới thiệu HTTP caching và Uniform Interface
-🟥 V4	REST hoàn chỉnh — có Layered System, Code-on-Demand, Pagination, Hypermedia
+| Version | Port | URL                                            |
+| ------- | ---- | ---------------------------------------------- |
+| 🟦 V1   | 5000 | [http://localhost:5000](http://localhost:5000) |
+| 🟩 V2   | 5001 | [http://localhost:5001](http://localhost:5001) |
+| 🟨 V3   | 5002 | [http://localhost:5002](http://localhost:5002) |
+| 🟥 V4   | 5003 | [http://localhost:5003](http://localhost:5003) |
+
+| Version | Trọng tâm                                                                   |
+| ------- | --------------------------------------------------------------------------- |
+| 🟦 V1   | Hiểu nguyên tắc Client–Server separation                                    |
+| 🟩 V2   | Minh họa Stateless communication pattern                                    |
+| 🟨 V3   | Giới thiệu HTTP caching và Uniform Interface                                |
+| 🟥 V4   | REST hoàn chỉnh — có Layered System, Code-on-Demand, Pagination, Hypermedia |
