@@ -16,8 +16,35 @@ def index():
 # Books CRUD
 @app.route("/books")
 def list_books():
-    books = Book.query.order_by(Book.title.asc()).all()
-    return render_template("books.html", books=books)
+    # Lấy tham số từ query string
+    search = request.args.get("q", "", type=str)
+    page = request.args.get("page", 1, type=int)
+    limit = request.args.get("limit", 5, type=int)
+
+    # Câu truy vấn cơ bản
+    query = Book.query.order_by(Book.title.asc())
+
+    # Nếu có từ khóa tìm kiếm
+    if search:
+        query = query.filter(
+            (Book.title.ilike(f"%{search}%")) |
+            (Book.author.ilike(f"%{search}%"))
+        )
+
+    # Phân trang
+    pagination = query.paginate(page=page, per_page=limit, error_out=False)
+
+    books = pagination.items
+    total_pages = pagination.pages
+
+    # Truyền kết quả xuống giao diện
+    return render_template(
+        "books.html",
+        books=books,
+        page=page,
+        total_pages=total_pages,
+        search=search
+    )
 
 
 @app.route("/books/new", methods=["GET", "POST"])
@@ -108,3 +135,35 @@ def return_book(loan_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+@app.route("/api/books")
+def api_books():
+    search = request.args.get("q", "", type=str)
+    page = request.args.get("page", 1, type=int)
+    limit = request.args.get("limit", 5, type=int)
+
+    query = Book.query.order_by(Book.title.asc())
+    if search:
+        query = query.filter(
+            (Book.title.ilike(f"%{search}%")) |
+            (Book.author.ilike(f"%{search}%"))
+        )
+
+    pagination = query.paginate(page=page, per_page=limit, error_out=False)
+    return {
+        "page": pagination.page,
+        "total_pages": pagination.pages,
+        "total_items": pagination.total,
+        "results": [
+            {
+                "id": b.id,
+                "title": b.title,
+                "author": b.author,
+                "genre": b.genre,
+                "year": b.year
+            } for b in pagination.items
+        ]
+    }
+
+

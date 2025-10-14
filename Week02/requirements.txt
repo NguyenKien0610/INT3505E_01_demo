@@ -1,0 +1,17 @@
+# Core Flask framework
+Flask==3.0.3
+
+# ORM (optional, nếu muốn dùng model hoặc database sau này)
+Flask-SQLAlchemy==3.1.1
+
+# Enable Cross-Origin Resource Sharing (nếu dùng fetch hoặc frontend gọi API)
+Flask-Cors==4.0.1
+
+# HTTP utilities
+requests==2.32.3
+
+# Optional development tools (chạy local và debug)
+Werkzeug==3.0.4
+itsdangerous==2.2.0
+click==8.1.7
+Jinja2==3.1.4

@@ -29,6 +29,8 @@ class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     author = db.Column(db.String(120), nullable=False)
+    genre = db.Column(db.String(100))               # 🆕 thêm thể loại
+    year = db.Column(db.Integer)                    # 🆕 thêm năm xuất bản
     total_copies = db.Column(db.Integer, default=1, nullable=False)
     available_copies = db.Column(db.Integer, default=1, nullable=False)
 
