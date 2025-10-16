@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
+# Danh sách dữ liệu mẫu (in-memory, không có session)
 books = [
     {"id": 1, "title": "Clean Code", "author": "Robert C. Martin"},
     {"id": 2, "title": "Fluent Python", "author": "Luciano Ramalho"},
