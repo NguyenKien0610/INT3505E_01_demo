@@ -1,88 +1,153 @@
 openapi: 3.0.0
 info:
-  title: Simple Book Management API
+  title: Library Management API
   version: 1.0.0
-  description: API đơn giản để quản lý sách (CRUD cơ bản)
+  description: >
+    API mô phỏng hệ thống quản lý thư viện đơn giản.
+    Gồm 3 thực thể chính: **Book**, **Member**, **Loan**.
+    Trình bày cách thiết kế resource tree RESTful và 2 chiến lược phân trang:
+    - **Offset-based pagination** (dễ triển khai nhưng có thể bị trượt dữ liệu)
+    - **Cursor-based pagination** (ổn định hơn khi dữ liệu thay đổi)
 
 servers:
-  - url: http://localhost:8080/api
+  - url: http://localhost:5000
 
 paths:
-  /books:
+  /books_offset:
     get:
-      summary: Lấy danh sách tất cả sách
-      description: Trả về danh sách toàn bộ sách trong hệ thống.
+      summary: Danh sách sách (offset-based pagination)
+      description: >
+        Trả về danh sách sách, sắp xếp theo `id DESC`, phân trang bằng offset.
+        Dữ liệu có thể bị **lặp hoặc trượt** nếu có thêm bản ghi mới trong lúc đọc.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+          description: Số lượng bản ghi trên một trang
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: Vị trí bắt đầu (offset-based)
       responses:
         '200':
-          description: Thành công
+          description: Danh sách sách theo offset
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Book'
+                type: object
+                properties:
+                  mode:
+                    type: string
+                    example: offset
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+                  total:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Book'
+
+  /books_cursor:
+    get:
+      summary: Danh sách sách (cursor-based pagination)
+      description: >
+        Phân trang ổn định hơn, sử dụng `last_id` làm con trỏ (cursor).
+        Các bản ghi được lấy theo `id < last_id` để tránh trượt dữ liệu.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+        - name: last_id
+          in: query
+          schema:
+            type: integer
+          description: ID cuối cùng của trang trước
+      responses:
+        '200':
+          description: Danh sách sách theo cursor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mode:
+                    type: string
+                    example: cursor
+                  limit:
+                    type: integer
+                  next_cursor:
+                    type: integer
+                    example: 5
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Book'
+
+  /members/{member_id}/loans:
+    get:
+      summary: Danh sách phiếu mượn của một thành viên
+      description: >
+        Resource tree: `/members/{member_id}/loans`
+        Trả về danh sách phiếu mượn của thành viên, có hỗ trợ phân trang đơn giản.
+      parameters:
+        - name: member_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Danh sách phiếu mượn
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  member_id:
+                    type: integer
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Loan'
+
+  /simulate_add_book:
     post:
-      summary: Thêm một cuốn sách mới
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BookInput'
+      summary: Thêm sách mới (mô phỏng dữ liệu thay đổi)
+      description: >
+        API dùng để **mô phỏng dữ liệu động** trong khi đang phân trang offset.
+        Mỗi lần gọi sẽ thêm một sách mới vào cơ sở dữ liệu.
       responses:
         '201':
-          description: Sách đã được thêm thành công
+          description: Thêm sách mới thành công
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Book'
-
-  /books/{id}:
-    parameters:
-      - name: id
-        in: path
-        required: true
-        description: ID của sách
-        schema:
-          type: integer
-
-    get:
-      summary: Lấy thông tin chi tiết của một cuốn sách
-      responses:
-        '200':
-          description: Thông tin sách
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Book'
-        '404':
-          description: Không tìm thấy sách
-
-    put:
-      summary: Cập nhật thông tin sách
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BookInput'
-      responses:
-        '200':
-          description: Đã cập nhật sách thành công
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Book'
-        '404':
-          description: Không tìm thấy sách
-
-    delete:
-      summary: Xóa một cuốn sách
-      responses:
-        '204':
-          description: Xóa thành công (không có nội dung trả về)
-        '404':
-          description: Không tìm thấy sách
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Book added successfully
 
 components:
   schemas:
@@ -98,30 +163,44 @@ components:
         author:
           type: string
           example: Tô Hoài
-        year:
-          type: integer
-          example: 1941
         status:
           type: string
           enum: [available, borrowed]
           example: available
 
-    BookInput:
+    Member:
       type: object
-      required:
-        - title
-        - author
       properties:
-        title:
-          type: string
-          example: O Chuột
-        author:
-          type: string
-          example: Tô Hoài
-        year:
+        id:
           type: integer
-          example: 1942
+          example: 1
+        name:
+          type: string
+          example: Nguyễn Văn A
+        email:
+          type: string
+          example: vana@example.com
+
+    Loan:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        book_id:
+          type: integer
+          example: 3
+        member_id:
+          type: integer
+          example: 2
+        borrow_date:
+          type: string
+          example: 2025-10-10
+        return_date:
+          type: string
+          nullable: true
+          example: null
         status:
           type: string
-          enum: [available, borrowed]
-          example: available
+          enum: [borrowed, returned, overdue]
+          example: borrowed

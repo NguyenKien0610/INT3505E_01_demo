@@ -4,7 +4,6 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 
 app = Flask(__name__)
 CORS(app)  # Cho phép Swagger UI (chạy khác port) gọi được API này
-
 app.config["JWT_SECRET_KEY"] = "secret-key-demo"
 jwt = JWTManager(app)
 
