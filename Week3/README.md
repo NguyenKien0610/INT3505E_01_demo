@@ -45,6 +45,13 @@ http://127.0.0.1:5002/api/v1/users
 | Lấy danh sách đơn hàng   | GET    | `/api/v1/orders`     | Đơn hàng demo có sẵn                              |
 | API “xấu” để học         | GET    | `/getAllUserInfo`    | Ví dụ về thiết kế sai                             |
 
+### 🔢 Ví dụ về Versioning
+
+| Phiên bản | Endpoint             | Khác biệt chính |
+|------------|----------------------|----------------|
+| v1         | `/api/v1/users`      | Dữ liệu cơ bản |
+| v2         | `/api/v2/users`      | Thêm trường `role`, minh họa khả năng mở rộng |
+
 ## Case Study: Phân tích API thiết kế kém
 ❌ API: /getAllUserInfo
 
@@ -57,3 +64,10 @@ Vấn đề:
 Cách cải thiện:
 ✅ Nên viết lại: 
 GET /api/v1/users
+
+### 💎 Một số RESTful Best Practices khác
+- Dùng **status code chuẩn**: 200 (OK), 201 (Created), 404 (Not Found)
+- Không dùng động từ trong URL (`/getUser`, `/createUser`) mà dùng method HTTP thay thế
+- Dữ liệu trả về nên ở dạng JSON thống nhất
+- Nếu có quan hệ giữa resource (ví dụ user → order), nên dùng nested resource: `/api/v1/users/{id}/orders`
+

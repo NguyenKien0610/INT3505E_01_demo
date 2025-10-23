@@ -45,6 +45,15 @@ def create_user():
     users.append(new_user)
     return jsonify(new_user), 201
 
+# GET /api/v2/users
+@app.route("/api/v2/users", methods=["GET"])
+def get_users_v2():
+    """Ví dụ version mới: thêm trường 'role'"""
+    extended_users = [
+        {**u, "role": "member"} for u in users
+    ]
+    return jsonify(extended_users), 200
+
 # ----------------------------
 # Ví dụ API poorly designed (để case study)
 # ----------------------------

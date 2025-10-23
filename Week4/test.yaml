@@ -2,29 +2,63 @@ openapi: 3.0.0
 info:
   title: Book Management API
   version: 1.0.0
-  description: API quản lý sách trong thư viện
+  description: >
+    API quản lý sách trong thư viện.  
+    ✅ Mỗi request là **stateless** — server không lưu session, mọi xác thực được gửi qua JWT token.  
+    ✅ Dùng Swagger UI để thử nghiệm trực tiếp các endpoint.
 
 servers:
   - url: http://localhost:5000/api
 
 paths:
+  /login:
+    post:
+      summary: Đăng nhập và nhận JWT token
+      description: Gửi username và password để nhận token cho các request cần xác thực.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: admin
+                password:
+                  type: string
+                  example: "123"
+      responses:
+        '200':
+          description: Trả về token JWT
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '401':
+          description: Sai thông tin đăng nhập
+
   /books:
     get:
       summary: Lấy danh sách tất cả sách
-      # parameters:
-      #   - name: author
-      #     in: query
-      #     description: Lọc theo tác giả
-      #     required: false
-      #     schema:
-      #       type: string
-      #       example: "Robert C. Martin"
-      #   - name: limit
-      #     in: query
-      #     description: Giới hạn số lượng sách trả về
-      #     schema:
-      #       type: integer
-      #       default: 10
+      parameters:
+        - name: author
+          in: query
+          description: Lọc theo tác giả
+          required: false
+          schema:
+            type: string
+            example: "Robert C. Martin"
+        - name: limit
+          in: query
+          description: Giới hạn số lượng sách trả về
+          schema:
+            type: integer
+            default: 10
       responses:
         '200':
           description: Danh sách sách
@@ -37,6 +71,9 @@ paths:
 
     post:
       summary: Thêm sách mới
+      description: Cần token xác thực qua Bearer JWT.
+      security:
+        - BearerAuth: []   # yêu cầu token
       requestBody:
         required: true
         content:
@@ -50,6 +87,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Book'
+        '401':
+          description: Thiếu hoặc token không hợp lệ
 
   /books/{id}:
     get:
@@ -72,6 +111,9 @@ paths:
 
     put:
       summary: Cập nhật thông tin sách
+      description: Cần token xác thực qua Bearer JWT.
+      security:
+        - BearerAuth: []   # yêu cầu token
       parameters:
         - name: id
           in: path
@@ -91,9 +133,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Book'
+        '401':
+          description: Thiếu hoặc token không hợp lệ
 
     delete:
       summary: Xóa sách theo ID
+      description: Cần token xác thực qua Bearer JWT.
+      security:
+        - BearerAuth: []   # yêu cầu token
       parameters:
         - name: id
           in: path
@@ -103,6 +150,8 @@ paths:
       responses:
         '204':
           description: Xóa thành công
+        '401':
+          description: Thiếu hoặc token không hợp lệ
 
 components:
   schemas:
@@ -128,41 +177,16 @@ components:
       properties:
         title:
           type: string
+          example: "New Book"
         author:
           type: string
+          example: "Nguyen Kien"
         year:
           type: integer
+          example: 2025
 
-
-# paths:
-#   /resource            
-#     HTTP method:              
-#       summary:          
-#       parameters:        
-#       requestBody:       
-#       responses:          
-
-# schema:
-#   <Tên Schema>;
-#     type:
-#     required:
-#     properties:
-#       <tên thuộc tính>:
-#         type:
-#         format:
-#         description:
-#         example:
-
-# parameters:
-#   - name: 
-#     in:         
-#     required:   
-#     description: 
-#     schema:                    
-
-# components:
-#   schemas:
-#   parameters:
-#   responses:
-#   requestBody:
-#   securitySchemas:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
