@@ -1,14 +1,14 @@
 openapi: 3.0.3
 info:
-  title: JWT Authentication & Authorization Demo (Flask)
+  title: JWT Authentication & Authorization Demo (Node.js + Express)
   description: >
     **Buổi 6 – Authentication và Authorization**  
-    Triển khai JWT Authentication, Refresh Token, Scopes, Roles, và kiểm tra bảo mật.
+    Triển khai JWT (access/refresh), Roles, Scopes, Revoke token, và demo replay detection.
   version: "1.0.0"
 
 servers:
-  - url: http://localhost:8000
-    description: Local Flask server
+  - url: http://localhost:3000
+    description: Local server
 
 components:
   securitySchemes:
@@ -27,7 +27,7 @@ components:
         password:
           type: string
           example: 123
-    TokenResponse:
+    TokenPairResponse:
       type: object
       properties:
         access_token:
@@ -47,11 +47,20 @@ components:
       properties:
         token:
           type: string
+          description: Tùy chọn: có thể truyền token trong body hoặc dùng Authorization header.
 
 security:
   - bearerAuth: []
 
 paths:
+  /:
+    get:
+      tags: [Public]
+      summary: Ping server
+      responses:
+        "200":
+          description: OK
+
   /login:
     post:
       tags: [Authentication]
@@ -68,7 +77,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenResponse'
+                $ref: '#/components/schemas/TokenPairResponse'
         "401":
           description: Sai thông tin đăng nhập
 
@@ -85,6 +94,8 @@ paths:
       responses:
         "200":
           description: Trả về access token mới
+        "401":
+          description: Thiếu refresh token
         "403":
           description: Refresh token không hợp lệ hoặc hết hạn
 
@@ -103,8 +114,10 @@ paths:
       responses:
         "200":
           description: Thành công
+        "401":
+          description: Thiếu/không có token
         "403":
-          description: Không có quyền truy cập
+          description: Không có quyền truy cập hoặc token không hợp lệ
 
   /books:
     post:
@@ -118,12 +131,32 @@ paths:
         "403":
           description: Không đủ quyền
 
+  /books/{book_id}:
+    delete:
+      tags: [Books]
+      summary: Xóa sách (scope delete:books, chỉ admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: book_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Thành công
+        "403":
+          description: Không đủ quyền
+
   /logout:
     post:
       tags: [Security]
-      summary: Thu hồi token
+      summary: Thu hồi token (revoke)
+      description: >
+        Có thể truyền token trong body **hoặc** đặt ở header `Authorization: Bearer <token>`.
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
@@ -133,11 +166,14 @@ paths:
           description: Token đã bị thu hồi
         "400":
           description: Không có token
+        "401":
+          description: Thiếu/không có token (khi yêu cầu xác thực)
 
   /secure-action:
     post:
       tags: [Security]
       summary: Demo phát hiện replay attack
+      description: Gọi lại token đã bị revoke sẽ bị 403.
       security:
         - bearerAuth: []
       responses:
