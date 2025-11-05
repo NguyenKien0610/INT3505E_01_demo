@@ -1,0 +1,236 @@
+openapi: 3.0.3
+info:
+  title: SOA Buoi 7 – Product API
+  version: 1.0.0
+servers:
+- url: http://localhost:3000
+paths:
+  /products:
+    get:
+      operationId: listProducts
+      parameters:
+      - description: Search by name substring
+        explode: true
+        in: query
+        name: q
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Product"
+                type: array
+          description: OK
+      summary: List products
+      tags:
+      - Products
+    post:
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductCreate"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+          description: Created
+      summary: Create product
+      tags:
+      - Products
+  /products/{id}:
+    delete:
+      operationId: deleteProduct
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+      summary: Delete product
+      tags:
+      - Products
+    get:
+      operationId: getProduct
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+          description: OK
+        "404":
+          description: Not Found
+      summary: Get product by id
+      tags:
+      - Products
+    patch:
+      operationId: updateProduct
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductPartial"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+          description: OK
+        "404":
+          description: Not Found
+      summary: Update partial product
+      tags:
+      - Products
+    put:
+      operationId: replaceProduct
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductUpdate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+          description: OK
+        "404":
+          description: Not Found
+      summary: Replace product
+      tags:
+      - Products
+components:
+  schemas:
+    Product:
+      example:
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        price: 999.99
+        name: iPhone 15
+        description: Flagship phone
+        id: 65a1f2b0c12e1a2b3c4d5e6f
+        updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        id:
+          description: Mongo document id
+          example: 65a1f2b0c12e1a2b3c4d5e6f
+          title: id
+          type: string
+        name:
+          example: iPhone 15
+          title: name
+          type: string
+        price:
+          example: 999.99
+          format: double
+          title: price
+          type: number
+        description:
+          example: Flagship phone
+          title: description
+          type: string
+        createdAt:
+          format: date-time
+          title: createdAt
+          type: string
+        updatedAt:
+          format: date-time
+          title: updatedAt
+          type: string
+      required:
+      - id
+      - name
+      - price
+      title: Product
+      type: object
+    ProductCreate:
+      example:
+        price: 0.8008281904610115
+        name: name
+        description: description
+      properties:
+        name:
+          title: name
+          type: string
+        price:
+          format: double
+          title: price
+          type: number
+        description:
+          title: description
+          type: string
+      required:
+      - name
+      - price
+      title: ProductCreate
+      type: object
+    ProductUpdate:
+      allOf:
+      - $ref: "#/components/schemas/ProductCreate"
+      example:
+        price: 0.8008281904610115
+        name: name
+        description: description
+      title: ProductUpdate
+    ProductPartial:
+      example:
+        price: 0.8008281904610115
+        name: name
+        description: description
+      properties:
+        name:
+          title: name
+          type: string
+        price:
+          format: double
+          title: price
+          type: number
+        description:
+          title: description
+          type: string
+      title: ProductPartial
+      type: object
