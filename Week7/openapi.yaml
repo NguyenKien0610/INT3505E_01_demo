@@ -1,0 +1,153 @@
+openapi: 3.0.3
+info:
+  title: SOA Buoi 7 – Product API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+paths:
+  /products:
+    get:
+      summary: List products
+      operationId: listProducts
+      tags: [Products]
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search by name substring
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Product' }
+    post:
+      summary: Create product
+      operationId: createProduct
+      tags: [Products]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+  /products/{id}:
+    get:
+      summary: Get product by id
+      operationId: getProduct
+      tags: [Products]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '404': { description: Not Found }
+    put:
+      summary: Replace product
+      operationId: replaceProduct
+      tags: [Products]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductUpdate' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '404': { description: Not Found }
+    patch:
+      summary: Update partial product
+      operationId: updateProduct
+      tags: [Products]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductPartial' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '404': { description: Not Found }
+    delete:
+      summary: Delete product
+      operationId: deleteProduct
+      tags: [Products]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '204': { description: No Content }
+        '404': { description: Not Found }
+components:
+  schemas:
+    Product:
+      type: object
+      required: [id, name, price]
+      properties:
+        id:
+          type: string
+          description: Mongo document id
+          example: 65a1f2b0c12e1a2b3c4d5e6f
+        name:
+          type: string
+          example: iPhone 15
+        price:
+          type: number
+          format: double
+          example: 999.99
+        description:
+          type: string
+          example: Flagship phone
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProductCreate:
+      type: object
+      required: [name, price]
+      properties:
+        name: { type: string }
+        price: { type: number, format: double }
+        description: { type: string }
+    ProductUpdate:
+      allOf:
+        - $ref: '#/components/schemas/ProductCreate'
+    ProductPartial:
+      type: object
+      properties:
+        name: { type: string }
+        price: { type: number, format: double }
+        description: { type: string }
