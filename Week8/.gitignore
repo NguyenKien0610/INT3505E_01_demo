@@ -1,0 +1,14 @@
+# Bỏ qua thư mục chứa thư viện cài qua npm
+node_modules/
+
+# Bỏ qua file tạm hoặc log
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Bỏ qua file báo cáo test
+report.html
+
+# Bỏ qua môi trường ảo (nếu có)
+.venv/

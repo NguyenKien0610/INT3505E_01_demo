@@ -1,0 +1,110 @@
+{
+  "info": {
+    "name": "Product API Tests",
+    "_postman_id": "b1f5b8b3-15d5-4fa2-b0a7-1cfeb4d64c9c",
+    "description": "Test suite for Product API (SOA Buổi 8)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET all products",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "http://localhost:3000/products", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["products"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Response time < 300ms', () => pm.expect(pm.response.responseTime).to.be.below(300));",
+              "pm.test('Body contains array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET product by ID",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:3000/products/1", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["products", "1"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Response has name field', () => pm.expect(pm.response.json()).to.have.property('name'));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST new product",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Notebook\",\n  \"price\": 5\n}" },
+        "url": { "raw": "http://localhost:3000/products", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["products"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Response contains id', () => pm.expect(pm.response.json()).to.have.property('id'));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "PUT update product",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"price\": 8\n}" },
+        "url": { "raw": "http://localhost:3000/products/1", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["products", "1"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Price updated', () => pm.expect(pm.response.json().price).to.eql(8));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DELETE product",
+      "request": {
+        "method": "DELETE",
+        "url": { "raw": "http://localhost:3000/products/2", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["products", "2"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 204', () => pm.response.to.have.status(204));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}
