@@ -31,10 +31,11 @@ class ProductCreate(BaseModel):
     """
     ProductCreate
     """ # noqa: E501
+    id: Optional[StrictInt] = None
     name: StrictStr
     price: Union[StrictFloat, StrictInt]
     description: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["name", "price", "description"]
+    __properties: ClassVar[List[str]] = ["id", "name", "price", "description"]
 
     model_config = {
         "populate_by_name": True,
@@ -85,6 +86,7 @@ class ProductCreate(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
+            "id": obj.get("id"),
             "name": obj.get("name"),
             "price": obj.get("price"),
             "description": obj.get("description")

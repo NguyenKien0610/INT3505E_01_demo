@@ -5,8 +5,7 @@ import os
 
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
-from bson.objectid import ObjectId
-from bson.errors import InvalidId
+from fastapi import HTTPException
 
 from openapi_server.apis.products_api_base import BaseProductsApi
 from openapi_server.models.product import Product
@@ -36,6 +35,11 @@ class ProductsApiImpl(BaseProductsApi):
         self._db = self._client[MONGODB_DATABASE]
         self._col = self._db["products"]
 
+    def _id_filter(self, iid: int) -> dict:
+        """Return a Mongo filter that matches documents whose `id` is the given
+        integer or the string representation (handles mixed types in DB).
+        """
+        return {"$or": [{"id": iid}, {"id": str(iid)}]}
     async def list_products(self, q: Optional[str]) -> List[Product]:
         query = {}
         if q:
@@ -43,7 +47,7 @@ class ProductsApiImpl(BaseProductsApi):
             query = {"name": {"$regex": q, "$options": "i"}}
 
         docs = []
-        cursor = self._col.find(query).sort("_id", 1)
+        cursor = self._col.find(query).sort("id", 1)
         async for d in cursor:
             docs.append(_doc_to_product(d))
         return docs
@@ -52,21 +56,43 @@ class ProductsApiImpl(BaseProductsApi):
         now = datetime.utcnow()
         doc = product_create.model_dump()
         doc.update({"createdAt": now, "updatedAt": now})
+        # if client provided a numeric `id`, block when it already exists
+        if doc.get("id") is not None:
+            try:
+                iid = int(doc.get("id"))
+            except (ValueError, TypeError):
+                raise HTTPException(status_code=400, detail="id must be an integer")
+            exists = await self._col.find_one(self._id_filter(iid))
+            if exists:
+                raise HTTPException(status_code=409, detail="Product with this id already exists")
+
+        # normalize id to integer in the stored document if provided
+        if doc.get("id") is not None:
+            try:
+                doc["id"] = int(doc.get("id"))
+            except (ValueError, TypeError):
+                raise HTTPException(status_code=400, detail="id must be an integer")
+
         res = await self._col.insert_one(doc)
-        inserted = await self._col.find_one({"_id": res.inserted_id})
+        # prefer to find by numeric `id` field if the payload provided one;
+        # otherwise fall back to the Mongo-generated _id
+        if doc.get("id") is not None:
+            inserted = await self._col.find_one(self._id_filter(int(doc.get("id"))))
+        else:
+            inserted = await self._col.find_one({"_id": res.inserted_id})
+        if not inserted:
+            raise HTTPException(status_code=500, detail="Failed to retrieve inserted product")
         return _doc_to_product(inserted)
 
     async def get_product(self, id: str) -> Product:
+        # search by numeric `id` field (not Mongo _id)
         try:
-            oid = ObjectId(id)
-        except InvalidId:
-            from fastapi import HTTPException
-
+            iid = int(id)
+        except (ValueError, TypeError):
             raise HTTPException(status_code=404, detail="Not Found")
-        doc = await self._col.find_one({"_id": oid})
-        if not doc:
-            from fastapi import HTTPException
 
+        doc = await self._col.find_one(self._id_filter(iid))
+        if not doc:
             raise HTTPException(status_code=404, detail="Not Found")
         return _doc_to_product(doc)
 
@@ -74,31 +100,37 @@ class ProductsApiImpl(BaseProductsApi):
         now = datetime.utcnow()
         update_doc = product_update.model_dump()
         update_doc.update({"updatedAt": now, "createdAt": update_doc.get("createdAt")})
+        # replace by numeric `id` field
         try:
-            oid = ObjectId(id)
-        except InvalidId:
-            from fastapi import HTTPException
-
+            iid = int(id)
+        except (ValueError, TypeError):
             raise HTTPException(status_code=404, detail="Not Found")
-        res = await self._col.replace_one({"_id": oid}, update_doc)
+
+        # ensure document exists and keep its _id when replacing
+        existing = await self._col.find_one(self._id_filter(iid))
+        if not existing:
+            raise HTTPException(status_code=404, detail="Not Found")
+
+        update_doc["_id"] = existing.get("_id")
+        # ensure stored id preserved/normalized
+        update_doc["id"] = iid
+        res = await self._col.replace_one(self._id_filter(iid), update_doc)
         if res.matched_count == 0:
-            from fastapi import HTTPException
-
             raise HTTPException(status_code=404, detail="Not Found")
-        doc = await self._col.find_one({"_id": ObjectId(id)})
+        doc = await self._col.find_one(self._id_filter(iid))
+        if not doc:
+            raise HTTPException(status_code=404, detail="Not Found")
         return _doc_to_product(doc)
 
     async def delete_product(self, id: str) -> None:
+        # delete by numeric `id` field
         try:
-            oid = ObjectId(id)
-        except InvalidId:
-            from fastapi import HTTPException
-
+            iid = int(id)
+        except (ValueError, TypeError):
             raise HTTPException(status_code=404, detail="Not Found")
-        res = await self._col.delete_one({"_id": oid})
-        if res.deleted_count == 0:
-            from fastapi import HTTPException
 
+        res = await self._col.delete_one(self._id_filter(iid))
+        if res.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Not Found")
         return None
 
@@ -108,37 +140,33 @@ class ProductsApiImpl(BaseProductsApi):
         if not update_fields:
             # nothing to update, return current
             try:
-                oid = ObjectId(id)
-            except InvalidId:
-                from fastapi import HTTPException
-
+                iid = int(id)
+            except (ValueError, TypeError):
                 raise HTTPException(status_code=404, detail="Not Found")
-            doc = await self._col.find_one({"_id": oid})
+            doc = await self._col.find_one(self._id_filter(iid))
             if not doc:
-                from fastapi import HTTPException
-
                 raise HTTPException(status_code=404, detail="Not Found")
             return _doc_to_product(doc)
         update_fields["updatedAt"] = now
         try:
-            oid = ObjectId(id)
-        except InvalidId:
-            from fastapi import HTTPException
-
+            iid = int(id)
+        except (ValueError, TypeError):
             raise HTTPException(status_code=404, detail="Not Found")
-        res = await self._col.update_one({"_id": oid}, {"$set": update_fields})
+
+        res = await self._col.update_one(self._id_filter(iid), {"$set": update_fields})
         if res.matched_count == 0:
-            from fastapi import HTTPException
-
             raise HTTPException(status_code=404, detail="Not Found")
-        doc = await self._col.find_one({"_id": oid})
+        doc = await self._col.find_one(self._id_filter(iid))
+        if not doc:
+            raise HTTPException(status_code=404, detail="Not Found")
         return _doc_to_product(doc)
 
 
 def _doc_to_product(doc: dict) -> Product:
-    # convert Mongo document to Product model. Map _id to id and handle datetime aliases
+    # convert Mongo document to Product model. Map id to id and handle datetime aliases
     out = {
-        "id": str(doc.get("_id")),
+        # Prefer the numeric `id` field when present; otherwise use the Mongo _id
+        "id": str(doc.get("id")) if doc.get("id") is not None else str(doc.get("_id")),
         "name": doc.get("name"),
         "price": doc.get("price"),
         "description": doc.get("description"),
