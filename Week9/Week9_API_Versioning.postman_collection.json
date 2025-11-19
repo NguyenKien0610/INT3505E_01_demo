@@ -1,0 +1,648 @@
+{
+  "info": {
+    "name": "Week9 - API Versioning Demo",
+    "description": "Collection for testing API Versioning and Lifecycle Management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Basic Endpoints",
+      "item": [
+        {
+          "name": "Root - API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/",
+              "host": ["{{BASE_URL}}"],
+              "path": [""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deprecation Notice",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/deprecation-notice",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "deprecation-notice"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Version Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/version-info",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "version-info"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. V1 Endpoints (Deprecated)",
+      "item": [
+        {
+          "name": "V1 - Create Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has payment_id\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('payment_id');",
+                  "    pm.environment.set(\"V1_PAYMENT_ID\", jsonData.payment_id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 100.50,\n    \"currency\": \"USD\",\n    \"customer_id\": \"CUST_001\",\n    \"description\": \"Test payment V1\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "payments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "V1 - Get Payment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/payments/{{V1_PAYMENT_ID}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "payments", "{{V1_PAYMENT_ID}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. V2 Endpoints (Current)",
+      "item": [
+        {
+          "name": "V2 - Create Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has all V2 fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('payment_id');",
+                  "    pm.expect(jsonData).to.have.property('payment_method');",
+                  "    pm.expect(jsonData).to.have.property('metadata');",
+                  "    pm.environment.set(\"V2_PAYMENT_ID\", jsonData.payment_id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 250.75,\n    \"currency\": \"USD\",\n    \"customer_id\": \"CUST_002\",\n    \"payment_method\": \"card\",\n    \"metadata\": {\n        \"order_id\": \"ORD_12345\",\n        \"product\": \"Premium Subscription\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v2/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v2", "payments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "V2 - Get Payment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v2/payments/{{V2_PAYMENT_ID}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v2", "payments", "{{V2_PAYMENT_ID}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "V2 - List All Payments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v2/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v2", "payments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "V2 - List with Filter (Customer)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v2/payments?customer_id=CUST_002",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v2", "payments"],
+              "query": [
+                {
+                  "key": "customer_id",
+                  "value": "CUST_002"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "V2 - List with Filter (Status)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v2/payments?status=pending",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v2", "payments"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "V2 - List with Limit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v2/payments?limit=5",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v2", "payments"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Idempotency Tests",
+      "item": [
+        {
+          "name": "Idempotency - Request 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set(\"IDEM_PAYMENT_ID\", jsonData.payment_id);",
+                  "",
+                  "pm.test(\"Payment ID saved\", function () {",
+                  "    pm.expect(pm.environment.get(\"IDEM_PAYMENT_ID\")).to.not.be.undefined;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 99.99,\n    \"currency\": \"USD\",\n    \"customer_id\": \"CUST_003\",\n    \"payment_method\": \"e_wallet\",\n    \"idempotency_key\": \"UNIQUE_KEY_12345\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v2/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v2", "payments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Idempotency - Request 2 (Same Key)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Returns same payment_id\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var firstPaymentId = pm.environment.get(\"IDEM_PAYMENT_ID\");",
+                  "    pm.expect(jsonData.payment_id).to.equal(firstPaymentId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 99.99,\n    \"currency\": \"USD\",\n    \"customer_id\": \"CUST_003\",\n    \"payment_method\": \"e_wallet\",\n    \"idempotency_key\": \"UNIQUE_KEY_12345\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v2/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v2", "payments"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Header Versioning",
+      "item": [
+        {
+          "name": "Header Version - V1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Version",
+                "value": "1"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 150.00,\n    \"customer_id\": \"CUST_004\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "payments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Header Version - V2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Version",
+                "value": "2"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 150.00,\n    \"customer_id\": \"CUST_004\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "payments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Header Version - Invalid",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Version",
+                "value": "99"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 150.00,\n    \"customer_id\": \"CUST_004\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "payments"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Query Parameter Versioning",
+      "item": [
+        {
+          "name": "Query Version - V1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/payments/{{V2_PAYMENT_ID}}/details?version=1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "payments", "{{V2_PAYMENT_ID}}", "details"],
+              "query": [
+                {
+                  "key": "version",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Query Version - V2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/payments/{{V2_PAYMENT_ID}}/details?version=2",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "payments", "{{V2_PAYMENT_ID}}", "details"],
+              "query": [
+                {
+                  "key": "version",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. Validation Errors",
+      "item": [
+        {
+          "name": "Error - Negative Amount",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": -100,\n    \"currency\": \"USD\",\n    \"customer_id\": \"CUST_005\",\n    \"payment_method\": \"card\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v2/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v2", "payments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Error - Invalid Currency",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 100,\n    \"currency\": \"US\",\n    \"customer_id\": \"CUST_005\",\n    \"payment_method\": \"card\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v2/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v2", "payments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Error - Missing Required Field",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 100,\n    \"currency\": \"USD\",\n    \"customer_id\": \"CUST_005\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v2/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v2", "payments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Error - Invalid Payment Method",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 100,\n    \"currency\": \"USD\",\n    \"customer_id\": \"CUST_005\",\n    \"payment_method\": \"bitcoin\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v2/payments",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v2", "payments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Error - Payment Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v2/payments/PAY_99999",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v2", "payments", "PAY_99999"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}
